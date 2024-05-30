@@ -1,0 +1,49 @@
+if self.gameFinished:
+            return
+        
+        # Get coordinates of the move from the player.
+        print("Your move is ? ")
+        posX = int(input("Index of the row: "))
+        posY = int(input("Index of the column: "))
+        
+        # Place a black stone to that cell.
+        if (self.playMove(posX, posY, True) == False):
+            # If the cell is already populated, do nothing.
+            print("AI's move is ?: ")
+            self.isPlayersTurn = True
+            return
+        
+        # Check if the last move ends the game.
+        self.winner = self.checkWinner()
+        
+        if (self.winner == 2):
+            print("Player wins!")
+            self.gameFinished = True
+            return
+        
+        # Make the AI instance calculate a move.
+        aiMove = self.ai.calculate_next_move(self.minimaxDepth)
+        
+        if (aiMove == None):
+            print("No possible moves left. Game Over.")
+            self.gameFinished = True
+            return
+        
+        # Place a black stone to the found cell.
+        self.playMove(aiMove[1], aiMove[0], False)
+        
+        print("Black: ", Minimax.get_score(self.board,True,True), " White: ",  Minimax.get_score(self.board,False,True))
+        
+        self.winner = self.checkWinner()
+
+        if (self.winner == 1):
+            print("AI wins!")
+            self.gameFinished = True
+            return
+        
+        if (len(self.board.generate_moves()) == 0):
+            print("No possible moves left. Game Over.")
+            self.gameFinished = True
+            return
+        
+        self.isPlayersTurn = True
