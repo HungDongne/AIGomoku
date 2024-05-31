@@ -50,96 +50,51 @@ class Minimax:
 
     # Hàm này được sử dụng để lấy nước đi thông minh tiếp theo cho AI.
     def calculate_next_move(self, depth):
-        #Khóa bảng để AI đưa ra quyết định.
-
         move = [0, 0]
-
-        #Chỉ sử dụng cho mục đích đo hiệu suất.
         start_time = time.time()
-
-        # Kiểm tra xem có nước đi nào có thể kết thúc trò chơi không để đảm bảo AI luôn
-		# nắm lấy cơ hội kết thúc trò chơi.
         best_move = Minimax.search_winning_move(self.board)
-
+        
+        # print("SELF BOARD: \n")
+        # self.board.printBoard()
+        # print("END: \n")
+        
         if best_move is not None:
-            # Tìm thấy nước đi kết thúc trò chơi
             move[0] = int(best_move[1])
             move[1] = int(best_move[2])
         else:
-            # Nếu không có nước đi như vậy, tìm kiếm cây Minimax với độ sâu đã chỉ định.
             best_move = Minimax.minimax_search_ab(depth, self.board, True, -1.0, self.get_win_score())
             if best_move[1] is None:
                 move = None
             else:
                 move[0] = int(best_move[1])
                 move[1] = int(best_move[2])
-
         print(f"Cases calculated: {Minimax.evaluation_count} Calculation time: {time.time() - start_time:.2f} ms")
-
         Minimax.evaluation_count = 0
-
         return move
-
-	 # alpha : Nước đi tốt nhất của AI (Max)
-	 # beta : Nước đi tốt nhất của người chơi (Min)
-	 # trả về: {score, move[0], move[1]}
+    
     @staticmethod
     def minimax_search_ab(depth, dummy_board, max, alpha, beta):
-        # Độ sâu cuối cùng (nút kết thúc), đánh giá điểm hiện tại của bảng.
         if depth == 0:
             return [Minimax.evaluate_board_for_white(dummy_board, not max), None, None]
-        # Tạo tất cả các nước đi có thể từ nút này của cây Minimax
-		#
-		#                  (Nước đi 1)
-		#	               /
-		#  (Nút hiện tại) --- (Nước đi 2)
-		#				   \   ...
-		#                  (Nước đi N)
+        # print("DUMMY BOARD:")
+        # dummy_board.printBoard()
+        # print("END DUMMY BOARD")
         all_possible_moves = dummy_board.generate_moves()
-
-        # Nếu không có nước đi nào có thể, coi nút này là nút kết thúc và trả về điểm.
-        if not all_possible_moves:
+        if all_possible_moves is None:
             return [Minimax.evaluate_board_for_white(dummy_board, not max), None, None]
-
         best_move = [None] * 3
         
         # Tạo cây Minimax và tính điểm của nút.
         if max:
-            # Khởi tạo nước đi tốt nhất bắt đầu với -vô cực.
             best_move[0] = -math.inf
-
-            #Lặp qua tất cả các nước đi có thể thực hiện.
             for move in all_possible_moves:
-                # Thực hiện nước đi trên bảng tạm thời mà không vẽ bất cứ gì
-                dummy_board.add_stone_no_gui(move[1], move[0], False)
-
-                # Gọi hàm minimax cho độ sâu tiếp theo, để tìm kiếm điểm tối thiểu.
-				# Hàm này sẽ đệ quy tạo ra các cây Minimax mới từ nút này 
-				# (nếu depth > 0) và tìm kiếm điểm trắng tối thiểu trong mỗi cây con.
-				# Chúng ta sẽ tìm điểm tối đa của độ sâu này, trong số các điểm tối thiểu tìm thấy ở
-				# độ sâu thấp hơn
+                dummy_board.add_stone(move[1], move[0], False)
                 temp_move = Minimax.minimax_search_ab(depth - 1, dummy_board, False, alpha, beta)
-
-                # Quay lui và loại bỏ nước đi
                 dummy_board.remove_stone_no_gui(move[1], move[0])
-
-                # Cập nhật alpha (giá trị alpha giữ điểm tối đa)
-				# Khi tìm kiếm điểm tối thiểu, nếu điểm của một nút nhỏ hơn alpha 
-				# (điểm tối đa của các nút cùng cấp từ một cấp trên) thì toàn bộ cây con xuất phát
-				# từ nút đó sẽ bị loại bỏ, vì người chơi tối đa sẽ chọn nút alpha thay vì bất kỳ nút nào
-				# có điểm nhỏ hơn alpha.
-                if float(temp_move[0] > alpha):
-                    alpha = float(temp_move[0])
-
-                # Cắt tỉa với beta
-				# Giá trị beta giữ điểm tối thiểu trong số các nút cùng cấp từ một cấp trên.
-				# Chúng ta cần tìm điểm thấp hơn điểm beta này, vì bất kỳ điểm nào cao hơn
-				# beta sẽ bị loại bỏ bởi người chơi tối thiểu (cấp trên). Nếu điểm
-				# cao hơn (hoặc bằng) beta, dừng vòng lặp, loại bỏ các nút còn lại 
-				# và trả về nước đi cuối cùng   
-                if float(temp_move[0] >= beta):
+                if temp_move[0] > alpha:
+                    alpha = temp_move[0]
+                if temp_move[0] >= beta:
                     return temp_move
-                
                 # Tìm nước đi có điểm tối đa.
                 if temp_move[0] > best_move[0]:
                     best_move = temp_move
@@ -154,38 +109,15 @@ class Minimax:
 
             # Lặp qua tất cả các nước đi có thể thực hiện.
             for move in all_possible_moves:
-                # Tạo một bảng tạm thời tương đương với bảng hiện tại
-				# Thực hiện nước đi trên bảng tạm thời mà không vẽ bất cứ gì
-                dummy_board.add_stone_no_gui(move[1], move[0], True)
-
-                # Gọi hàm minimax cho độ sâu tiếp theo, để tìm kiếm điểm tối đa.
-				# Hàm này sẽ đệ quy tạo ra các cây Minimax mới từ nút này 
-				# (nếu depth > 0) và tìm kiếm điểm trắng tối đa trong mỗi cây con.
-				# Chúng ta sẽ tìm điểm tối thiểu của độ sâu này, trong số các điểm tối đa tìm thấy ở
-				# độ sâu thấp hơn.
+                dummy_board.add_stone(move[1], move[0], True)
                 temp_move = Minimax.minimax_search_ab(depth - 1, dummy_board, True, alpha, beta)
-
                 dummy_board.remove_stone_no_gui(move[1], move[0])
-
-                # Cập nhật beta (giá trị beta giữ điểm tối thiểu)
-				# Khi tìm kiếm điểm tối đa, nếu điểm của một nút cao hơn beta 
-				# (điểm tối thiểu của các nút cùng cấp từ một cấp trên) thì toàn bộ cây con xuất phát
-				# từ nút đó sẽ bị loại bỏ, vì người chơi tối thiểu sẽ chọn nút beta thay vì bất kỳ nút nào
-				# có điểm cao hơn beta
-                if float(temp_move[0] < beta):
-                    beta = float(temp_move[0])
-
-                # Cắt tỉa với alpha
-				# Giá trị alpha giữ điểm tối đa trong số các nút cùng cấp từ một cấp trên.
-				# Chúng ta cần tìm điểm cao hơn điểm alpha này, vì bất kỳ điểm nào thấp hơn
-				# alpha sẽ bị loại bỏ bởi người chơi tối đa (cấp trên). Nếu điểm
-				# thấp hơn (hoặc bằng) alpha, dừng vòng lặp, loại bỏ các nút còn lại 
-				# và trả về nước đi cuối cùng.  
+                if temp_move[0] < beta:
+                    beta = temp_move[0]
                 if temp_move[0] <= alpha:
                     return temp_move
-                
                 # Tìm nước đi có điểm tối thiểu.
-                if float(temp_move[0]) < float(best_move[0]):
+                if temp_move[0] < best_move[0]:
                     best_move = temp_move
                     best_move[1] = move[0]
                     best_move[2] = move[1]
@@ -196,9 +128,7 @@ class Minimax:
     @staticmethod
     def search_winning_move(board):
         all_possible_moves = board.generate_moves()
-        print(all_possible_moves)
         winning_move = [None] * 3
-
         # Lặp qua tất cả các nước đi có thể
         for move in all_possible_moves:
             Minimax.evaluation_count += 1
@@ -218,15 +148,7 @@ class Minimax:
     # Hàm này tính điểm bằng cách đánh giá các vị trí đá theo hướng ngang
     @staticmethod
     def evaluate_horizontal(board_matrix, for_black, players_turn):
-        evaluations = [0, 2, 0] # [0] -> số lượng liên tiếp, [1] -> số lần bị chặn, [2] -> điểm số
-		# Biến blocks được sử dụng để kiểm tra xem một tập hợp đá liên tiếp bị chặn bởi đối thủ hoặc
-		# biên của bảng. Nếu cả hai bên của một tập hợp liên tiếp bị chặn, biến blocks sẽ là 2
-		# Nếu chỉ một bên bị chặn, biến blocks sẽ là 1, và nếu cả hai bên của tập hợp liên tiếp
-		# đều trống, số lần bị chặn sẽ là 0.
-		# Mặc định, ô đầu tiên trong hàng bị chặn bởi biên trái của bảng.
-		# Nếu ô đầu tiên trống, số lần bị chặn sẽ giảm 1.
-		# Nếu có một ô trống sau tập hợp đá liên tiếp, số lần bị chặn lại giảm 1.
-		# Lặp qua tất cả các hàng
+        evaluations = [0, 2, 0]
         for i in range(len(board_matrix)):
             # Lặp qua tất cả các ô trong hàng
             for j in range(len(board_matrix[0])):

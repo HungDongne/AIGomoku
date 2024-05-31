@@ -4,7 +4,7 @@ class Game:
     board = None
     isPlayersTurn = True
     gameFinished = False
-    minimaxDepth = 4
+    minimaxDepth = int(4)
     aiStarts = True # AI makes the first move
     ai = None
     cacheFile = "score_cache.ser"
@@ -22,10 +22,10 @@ class Game:
             self.isPlayersTurn = True
         # Now it's human player's turn.
         else:
-            print("Your move is ?: ")
-            posX = input("Index of the row: ")
-            posY = input("Index of the column: ")
-            self.playMove(posX, posY, True)
+            print("Your move is ? [x,y] ")
+            posX = int(input("Index of the row: "))
+            posY = int(input("Index of the column: "))
+            self.playMove(posY, posX, True)
             self.isPlayersTurn = False
         
     # Sets the depth of the minimax tree. (i.e. how many moves ahead should the AI calculate.
@@ -40,15 +40,13 @@ class Game:
         self.board.printBoard()
         while not self.gameFinished:
             if self.isPlayersTurn:
-                print("Your move is ?: ")
+                print("Your move is ? [x,y] ")
                 posX = int(input("Index of the row: "))
                 posY = int(input("Index of the column: "))
-                self.playMove(posX, posY, True)
+                self.playMove(posY, posX, True)
                 self.isPlayersTurn = False
             else:
                 print("AI is thinking...")
-                
-                # Make the AI instance calculate a move.
                 aiMove = self.ai.calculate_next_move(self.minimaxDepth)
                 print(aiMove)
                 if (aiMove == None):
