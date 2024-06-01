@@ -1,9 +1,8 @@
 class Board:
     board_matrix = None
     def __init__(self, board_size):
-        #  self.gui = BoardGUI(side_length, board_size) #
         self.board_matrix = [[0 for _ in range(board_size)] for _ in range(board_size)]
-        
+      
     def copy_board(self):
         new_board = Board(len(self.board_matrix))
         new_board.board_matrix = [row[:] for row in self.board_matrix]
@@ -33,12 +32,10 @@ class Board:
         move_list = []
         board_size = board_matrix.__len__()
 
-        # Look for cells that has at least one stone in an adjacent cell.
         for i in range(board_size):
             for j in range(board_size):
                 if board_matrix[i][j] > 0:
                     continue
-
                 if i > 0:
                     if j > 0:
                         if board_matrix[i - 1][j - 1] > 0 or board_matrix[i][j - 1] > 0:

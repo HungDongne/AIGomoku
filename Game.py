@@ -16,7 +16,6 @@ class Game:
         self.winner = 0
         
     def start(self):
-        # If the AI is making the first move, place a white stone in the middle of the board.
         if self.aiStarts:
             self.playMove(self.board.get_board_size()//2, self.board.get_board_size()//2, False)
             self.isPlayersTurn = True
@@ -28,7 +27,6 @@ class Game:
             self.playMove(posY, posX, True)
             self.isPlayersTurn = False
         
-    # Sets the depth of the minimax tree. (i.e. how many moves ahead should the AI calculate.
     def setAIDepth(self, depth):
         self.minimaxDepth = depth
     
@@ -36,7 +34,7 @@ class Game:
         self.aiStarts = aiStarts
         
     def run(self):
-        self.start()
+        # self.start()
         self.board.printBoard()
         while not self.gameFinished:
             if self.isPlayersTurn:
@@ -57,7 +55,9 @@ class Game:
                 self.playMove(aiMove[1], aiMove[0], False)
                 print("Black: ", Minimax.get_score(self.board,True,True), " White: ",  Minimax.get_score(self.board,False,True))
                 self.isPlayersTurn = True
+            self.board.convert_num_to_char()
             self.board.printBoard()
+            self.board.convert_char_to_num()
             self.checkWinner()
         
     
@@ -71,3 +71,5 @@ class Game:
     def playMove(self, posX, posY, black):
         return self.board.add_stone(posX, posY, black)
     
+    def setAIstart(self, bool):
+        self.aiStarts = bool
