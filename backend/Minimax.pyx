@@ -1,12 +1,19 @@
+# minimax.pyx
+
 import time
 import math
-from Board import *
-class Minimax:
-    evaluation_count = int(0)
-    WIN_SCORE = int(100_000_000)
-    board = None
+from Board import Board
+from functools import lru_cache
+cimport cython
 
-    def __init__(self, board):
+cdef class Minimax:
+    cdef int evaluation_count
+    cdef int WIN_SCORE
+    cdef Board board
+
+    def __init__(self, Board board):
+        self.evaluation_count = 0
+        self.WIN_SCORE = 100_000_000
         self.board = board
 
     @staticmethod
@@ -22,9 +29,6 @@ class Minimax:
             black_score = 1.0
         return white_score / black_score
 
-    # Hàm này tính điểm của bảng cho người chơi được chỉ định.
-	# (tức là vị trí tổng quát của một người chơi trên bảng như thế nào bằng cách xem xét có bao nhiêu 
-	#  liên tiếp 2, 3, 4, bị chặn như thế nào, v.v...)
     @staticmethod
     def get_score(board, for_black, blacks_turn):
         board_matrix = board.board_matrix
@@ -32,8 +36,10 @@ class Minimax:
                 Minimax.evaluate_vertical(board_matrix, for_black, blacks_turn) +
                 Minimax.evaluate_diagonal(board_matrix, for_black, blacks_turn))
 
-    def calculate_next_move(self, depth):
-        move = [0, 0]
+    @cython.locals(depth=int)
+    @lru_cache(None)
+    def calculate_next_move(self, int depth):
+        cdef list move = [0, 0]
         start_time = time.time()
         best_move = Minimax.search_winning_move(self.board)
         if best_move is not None:
@@ -49,16 +55,16 @@ class Minimax:
         print(f"Cases calculated: {Minimax.evaluation_count} Calculation time: {time.time() - start_time:.2f} s")
         Minimax.evaluation_count = 0
         return move
-    
+
     @staticmethod
-    def minimax_search_ab(depth, dummy_board, max, alpha, beta):
+    def minimax_search_ab(int depth, dummy_board, bint max, float alpha, float beta):
         if depth == 0:
             return [Minimax.evaluate_board_for_white(dummy_board, not max), None, None]
         all_possible_moves = dummy_board.generate_moves()
         if all_possible_moves is None:
             return [Minimax.evaluate_board_for_white(dummy_board, not max), None, None]
         best_move = [None] * 3
-        
+
         if max:
             best_move[0] = -1.0
             for move in all_possible_moves:
@@ -143,7 +149,7 @@ class Minimax:
         return evaluations[2]
 
     @staticmethod
-    def evaluate_directions(board_matrix, i, j, is_bot, bots_turn, eval):
+    def evaluate_directions(board_matrix, int i, int j, bint is_bot, bint bots_turn, eval):
         if board_matrix[i][j] == (2 if is_bot else 1):
             eval[0] += 1
         elif board_matrix[i][j] == 0:
@@ -160,15 +166,15 @@ class Minimax:
             eval[1] = 2
 
     @staticmethod
-    def evaluate_directions_after_one_pass(eval, is_bot, players_turn):
+    def evaluate_directions_after_one_pass(eval, bint is_bot, bint players_turn):
         if eval[0] > 0:
             eval[2] += Minimax.get_consecutive_set_score(eval[0], eval[1], is_bot == players_turn)
         eval[0] = 0
         eval[1] = 2
 
     @staticmethod
-    def get_consecutive_set_score(count, blocks, current_turn):
-        win_guarantee = 1000000
+    def get_consecutive_set_score(int count, int blocks, bint current_turn):
+        cdef int win_guarantee = 1000000
         if blocks == 2 and count < 5:
             return 0
         if count == 5:
@@ -180,7 +186,7 @@ class Minimax:
                 return win_guarantee // 4 if blocks == 0 else 200
         elif count == 3:
             if blocks == 0:
-                return 50000 if current_turn else 200
+                return 50_000 if current_turn else 200
             else:
                 return 10 if current_turn else 5
         elif count == 2:

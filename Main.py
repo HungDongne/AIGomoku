@@ -1,8 +1,8 @@
-import Board
+import backend.Board
 import Game
-from Minimax import *
+from backend.Minimax import *
 
-board = Board(8)
+board = Board(15)
 # print(board.get_board_matrix())
 
 game = Game.Game(board)

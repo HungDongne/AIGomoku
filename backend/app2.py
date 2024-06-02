@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # Lấy địa chỉ server trọng tài từ người dùng
     # host = input("Enter server url: ")
     host = "http://4.145.107.27:80"
-    room_id = "30"
+    room_id = "48"
     your_team_id = "team-2"
     opponent_team_id = "team-1"
     team_roles = "o"

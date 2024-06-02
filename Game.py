@@ -1,4 +1,4 @@
-from Minimax import *
+from backend.Minimax import *
 
 class Game:
     board = None
@@ -55,9 +55,7 @@ class Game:
                 self.playMove(aiMove[1], aiMove[0], False)
                 print("Black: ", Minimax.get_score(self.board,True,True), " White: ",  Minimax.get_score(self.board,False,True))
                 self.isPlayersTurn = True
-            self.board.convert_num_to_char()
             self.board.printBoard()
-            self.board.convert_char_to_num()
             self.checkWinner()
         
     
